@@ -1,0 +1,12 @@
+[package]
+name = "semdiff"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["img"]
+img = ["dep:image"]
+
+[dependencies]
+diff = "0.1"
+image = { version = "0.25", optional = true }
