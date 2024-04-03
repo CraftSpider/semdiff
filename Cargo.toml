@@ -5,8 +5,9 @@ edition = "2021"
 
 [features]
 default = ["img"]
-img = ["dep:image"]
+img = ["dep:image", "dep:num-traits"]
 
 [dependencies]
 diff = "0.1"
 image = { version = "0.25", optional = true }
+num-traits = { version = "0.2", optional = true }
