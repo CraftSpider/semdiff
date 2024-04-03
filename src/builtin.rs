@@ -1,6 +1,8 @@
 use crate::algo::{DiffAlgo, DiffPatch};
 use crate::{algo, DiffRes, Diffable};
+use std::collections::HashSet;
 use std::fmt::Debug;
+use std::hash::Hash;
 
 /// Generate a diff based on the longest common subsequence (McIlroy-Hunt) algorithm.
 pub struct LcsDiff;
@@ -116,12 +118,45 @@ impl DiffAlgo<str> for algo::Default {
     }
 }
 
+impl<T: Eq + Hash> DiffAlgo<HashSet<T>> for LcsDiff {
+    type Diff<'a> = HashSet<DiffRes<&'a T>>
+    where
+        HashSet<T>: 'a;
+
+    fn diff<'a>(l: &'a HashSet<T>, r: &'a HashSet<T>) -> Self::Diff<'a> {
+        let mut out = HashSet::new();
+        for item in l {
+            out.insert(DiffRes::Left(item));
+        }
+        for item in r {
+            if out.remove(&DiffRes::Left(item)) {
+                out.insert(DiffRes::Both(item, item));
+            } else {
+                out.insert(DiffRes::Right(item));
+            }
+        }
+        out
+    }
+}
+
+impl<T: Eq + Hash> DiffPatch<HashSet<T>> for LcsDiff {}
+
+impl<T: Eq + Hash> Diffable for HashSet<T> {
+    type Diff<'a, A: DiffAlgo<Self::Item>> = A::Diff<'a>
+    where
+        Self: 'a;
+    type Item = HashSet<T>;
+
+    fn diff<'a, A: DiffAlgo<Self::Item>>(&'a self, other: &'a Self) -> Self::Diff<'a, A> {
+        A::diff(self, other)
+    }
+}
+
 impl<T: PartialEq + Debug> Diffable for [T] {
     type Diff<'a, A: DiffAlgo<Self::Item>> = A::Diff<'a>
     where
         Self: 'a;
     type Item = [T];
-
     fn diff<'a, A: DiffAlgo<Self::Item>>(&'a self, other: &'a Self) -> A::Diff<'a> {
         A::diff(self, other)
     }

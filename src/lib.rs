@@ -10,7 +10,7 @@ pub mod img;
 
 use algo::DiffAlgo;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash, PartialOrd)]
 pub enum DiffRes<T> {
     Left(T),
     Both(T, T),
